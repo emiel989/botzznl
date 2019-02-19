@@ -1,0 +1,7 @@
+data/
+logs/
+node_modules/
+src/config.json
+src/donators.json
+tmp/
+package-lock.json
