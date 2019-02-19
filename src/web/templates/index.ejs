@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include parts/head.ejs %>
+    <title>iBot - Home</title>
+  </head>
+  <body>
+    <!-- Nav-bar -->
+    <% include parts/header.ejs %>
+
+    <!-- Presentation -->
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="mbr-section-title mbr-bold mbr-fonts-style text-center"><strong>INTRODUCING IBOT</strong></h1>
+        <hr>
+        <p class="lead text-center">
+          iBot is a Discord bot made in Javascript using the discord.js wrapper. Created in April 2017, iBot became an all-in-one bot that is capable of doing various stuff such as moderation and utility!<br>
+          It is translated in 4 languages (French, Deutsch, Dutch, Polish) at the moment. You can participate to its development on the GitHub repository.
+        </p>
+        <br><br>
+
+        <!-- Special announcement -->
+        <div class="alert alert-danger" role="alert">
+          <div class="align-center text-center">
+            <h4 class="alert-heading">Important announcement - February 26th 2018</h4>
+            <hr>
+            <p>
+              Hello,<br>
+              Thanks for your interest in iBot. We would like to inform you that over the next few weeks, <b>iBot will be split into two different bots.</b><br>
+              After the split, iBot will no longer have moderation commands, as they will be moved to another bot. The new bot will retain some of the auto-moderation features.<br>
+              During this time, you should start switching to a new moderation bot such as Vortex, a nice moderation bot written by jagrosh.<br>
+              Sincerly, iDroid.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats (dynamic) -->
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="mbr-section-title mbr-bold mbr-fonts-style text-center"><strong>STATISTICS</strong></h1>
+        <hr>
+        <p id="stats" class="lead text-center">
+          <strong>SVRCNT servers</strong> • <strong>USRCNT users</strong><br>
+          <strong>LGNCNT languages</strong> • <strong>CMDCNT commands ran</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <% include parts/footer.ejs %>
+
+    <!-- Dynamic stats updater -->
+    <script defer type="text/javascript">
+    const stats = document.getElementById('stats');
+    const currentStats = {};
+
+    function updateStats() {
+      const request = new XMLHttpRequest();
+      request.withCredentials = true;
+      request.open('GET', 'https://ibot.idroid.me/api/bot/stats', true);
+
+      request.onreadystatechange = () => {
+        if (request.readyState === 4) {
+          if (request.status === 200) {
+            const response = JSON.parse(request.responseText);
+            const paragraph = stats.innerHTML
+              .replace(currentStats.guilds || 'SVRCNT', response.guilds)
+              .replace(currentStats.users || 'USRCNT', response.users)
+              .replace(currentStats.languages || 'LGNCNT', response.languages)
+              .replace(currentStats.cmdsran || 'CMDCNT', response.cmdsran);
+            stats.innerHTML = paragraph;
+
+            Object.keys(response).forEach(k => currentStats[k] = response[k]);
+          } else {
+            stats.innerHTML = 'ERROR';
+          }
+        }
+      };
+
+      request.send(null);
+    }
+
+    updateStats();
+    setInterval(updateStats, 5000);
+    </script>
+  </body>
+</html>

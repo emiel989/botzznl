@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include parts/head.ejs %>
+    <title>iBot - Server</title>
+    <style>
+    .table td {
+      border: black solid 1px !important
+    }
+    .table th {
+      border: black solid 1px !important
+    }</style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  </head>
+  <body>
+    <!-- Nav-bar -->
+    <% include parts/header.ejs %>
+
+    <!-- Guild presentation -->
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <img src="<%= (guild.icon) ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128` : 'https://www.shareicon.net/data/512x512/2017/06/21/887435_logo_512x512.png' %>" alt="<%= guild.name %>'s icon" class="rounded-circle" height="150px;" width="150px;" style="display: block; margin-left: auto; margin-right: auto;">
+        <h1 class="mbr-section-title mbr-bold mbr-fonts-style text-center"><strong><%= guild.name %></strong></h1>
+        <hr>
+        <p>
+          <strong>ID:</strong> <%= guild.id %><br>
+          <strong>Creation date:</strong> <%= guild.createdAt.toUTCString() %><br>
+          <strong>Members:</strong> <%= guild.memberCount %> total members (<%= guild.members.filter(m => m.user.bot).size %> bots and <%= guild.members.filter(m => m.user.presence.status === 'online').size %> online)<br>
+          <strong>Channels:</strong> <%= guild.channels.filter(c => c.type === 'text').size %> text and <%= guild.channels.filter(c => c.type === 'voice').size %> voice<br>
+          <strong>Owner:</strong> <span class="nav-item"><a href="/user/<%= guild.ownerID %>" style="color: grey;"><%= guild.owner.user.tag %></a></span><br>
+        </p>  
+      </div>
+    </div>
+
+    <% if (user.id === '205427654042583040' || (guild.members.has(user.id) && guild.members.get(user.id).permissions.has('MANAGE_GUILD'))) { %>
+    <!-- Configuration -->
+  
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <form id="configUpdate" name="configUpdate" method="post" action="javascript:void(0);">
+          <h1 class="mbr-section-title mbr-bold mbr-fonts-style text-center"><strong>CONFIGURATION</strong></h1>
+          <hr>
+          <div id="confStatus" class="alert alert-info text-center" role="alert">
+            Click on the <b>Update</b> button to submit your new configuration.
+          </div>
+          <nav class="nav nav-tabs nav-fill" style="align-content: center;" id="myTab" role="tablist">
+            <a class="nav-item nav-link active" id="channels-tab" data-toggle="tab" href="#channels" role="tab" aria-controls="channels" aria-selected="true">Channels</a>
+            <a class="nav-item nav-link" id="messages-tab" data-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">Messages</a>
+            <a class="nav-item nav-link" id="switches-tab" data-toggle="tab" href="#switches" role="tab" aria-controls="switches" aria-selected="false">Switches</a>
+            <a class="nav-item nav-link" id="misc-tab" data-toggle="tab" href="#misc" role="tab" aria-controls="misc" aria-selected="false">Misc</a>
+          </nav>
+          <div class="tab-content" id="nav-tabContent">
+              <div class="tab-pane fade show active" id="channels" role="tabpanel" aria-labelledby="channels-tab">
+                <div class="text-center">
+                  <p>
+                    <img src="https://discordapp.com/assets/593c4a3437fbb5b89fbb148f7b96424d.svg" height="20px" width="20px"> <b>Welcome channel:</b>
+                    <select id="channel_welcome" name="channel_welcome" aria-controls="config" class="form-control form-control-sm">
+                      <option value="NOT_SET">None</option>
+                      <% guild.channels.filter(c => c.type === 'text').sort((a, b) => a.position - b.position).forEach(c => { %>
+                      <option value="<%= c.id %>" <% if (config.channel_welcome === c.id) { %>selected<% } %>>#<%= c.name %></option>
+                      <% }); %>
+                    </select>
+                  </p>
+                
+                  <p>
+                    <img src="https://discordapp.com/assets/8367785ae4d4334f1f3371e239059ca1.svg" height="20px" width="20px"> <b>Serverlog channel:</b>
+                    <select id="channel_serverlog" name="channel_serverlog" aria-controls="config" class="form-control form-control-sm">
+                      <option value="NOT_SET">None</option>
+                      <% guild.channels.filter(c => c.type === 'text').sort((a, b) => a.position - b.position).forEach(c => { %>
+                      <option value="<%= c.id %>" <% if (config.channel_serverlog === c.id) { %>selected<% } %>>#<%= c.name %></option>
+                      <% }); %>
+                    </select>
+                  </p>
+                
+                  <p>
+                    <img src="https://cdn.discordapp.com/emojis/317093864487780352.png" height="20px" width="20px"> <b>Modlog channel:</b>
+                    <select id="channel_modlog" name="channel_modlog" aria-controls="config" class="form-control form-control-sm">
+                      <option value="NOT_SET">None</option>
+                      <% guild.channels.filter(c => c.type === 'text').sort((a, b) => a.position - b.position).forEach(c => { %>
+                      <option value="<%= c.id %>" <% if (config.channel_modlog === c.id) { %>selected<% } %>>#<%= c.name %></option>
+                      <% }); %>
+                    </select>
+                  </p>
+
+                  <p>
+                    <img src="https://discordapp.com/assets/8ce180bda86f59e517eb6a1d0ed84eef.svg" height="20px" width="20px"> <b>Phone channel:</b>
+                    <select id="channel_phone" name="channel_phone" aria-controls="config" class="form-control form-control-sm">
+                      <option value="NOT_SET">None</option>
+                      <% guild.channels.filter(c => c.type === 'text').sort((a, b) => a.position - b.position).forEach(c => { %>
+                      <option value="<%= c.id %>" <% if (config.channel_phone === c.id) { %>selected<% } %>>#<%= c.name %></option>
+                      <% }); %>
+                    </select>
+                  </p>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+                <div class="text-center">
+                  <p>
+                    <img src="https://discordapp.com/assets/593c4a3437fbb5b89fbb148f7b96424d.svg" height="20px" width="20px"> <b>Welcome message:</b>
+                    <textarea rows="3" class="form-control" id="message_welcome" name="message_welcome"><%= (config.message_welcome !== 'NOT_SET' ? config.message_welcome : 'No message set') %></textarea>
+                  </p>
+                  <p>
+                    <img src="https://discordapp.com/assets/4c231cb7c6f5bb352261a2e0bfa63fb1.svg" height="20px" width="20px"> <b>Leave message:</b>
+                    <textarea rows="3" class="form-control" id="message_leaving" name="message_leaving"><%= (config.message_leaving !== 'NOT_SET' ? config.message_leaving : 'No message set') %></textarea>
+                  </p>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="switches" role="tabpanel" aria-labelledby="switches-tab">
+                <div class="text-center">
+                  <p><img src="https://discordapp.com/assets/593c4a3437fbb5b89fbb148f7b96424d.svg" height="20px" width="20px"> <b>Welcome switch:</b> <select id="switch_welcome" name="switch_welcome" aria-controls="config" class="form-control form-control-sm"><option value="1" <% if (config.switch_welcome === 1) { %>selected<% } %>>Enabled</option><option value="0" <% if (config.switch_welcome === 0) { %>selected<% } %>>Disabled</option></select></p>
+                  <p><img src="https://discordapp.com/assets/8367785ae4d4334f1f3371e239059ca1.svg" height="20px" width="20px"> <b>Serverlog switch:</b> <select id="switch_serverlog" name="switch_serverlog" aria-controls="config" class="form-control form-control-sm"><option value="1" <% if (config.switch_serverlog === 1) { %>selected<% } %>>Enabled</option><option value="0" <% if (config.switch_serverlog === 0) { %>selected<% } %>>Disabled</option></select></p>
+                  <p><img src="https://cdn.discordapp.com/emojis/317093864487780352.png" height="20px" width="20px"> <b>Modlog switch:</b> <select id="switch_modlog" name="switch_modlog" aria-controls="config" class="form-control form-control-sm"><option value="1" <% if (config.switch_modlog === 1) { %>selected<% } %>>Enabled</option><option value="0" <% if (config.switch_modlog === 0) { %>selected<% } %>>Disabled</option></select></p>
+                  <p><img src="https://discordapp.com/assets/ba21bae0723b6477627f456c587de6c4.svg" height="20px" width="20px"> <b>Clear-backup switch:</b> <select id="switch_clearbackup" name="switch_clearbackup" aria-controls="config" class="form-control form-control-sm"><option value="1" <% if (config.switch_clearbackup === 1) { %>selected<% } %>>Enabled</option><option value="0" <% if (config.switch_clearbackup === 0) { %>selected<% } %>>Disabled</option></select></p>
+                  <p><img src="https://canary.discordapp.com/assets/aab936f252f4221f5d0b92b20fa67f7a.svg" height="20px" width="20px"> <b>Phonebook switch:</b> <select id="switch_phonebook" name="switch_phonebook" aria-controls="config" class="form-control form-control-sm"><option value="1" <% if (config.switch_phonebook === 1) { %>selected<% } %>>Enabled</option><option value="0" <% if (config.switch_phonebook === 0) { %>selected<% } %>>Disabled</option></select></p>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="misc" role="tabpanel" aria-labelledby="misc-tab">
+                <div class="text-center">
+                  <p><img src="https://discordapp.com/assets/be21e06571be73619ebba2e9731abb11.svg" height="20px" width="20px"> <b>Timezone:</b> <select id="timezone" name="timezone" aria-controls="config" class="form-control form-control-sm"><% timezones.forEach(tz => { %><option value="<%= tz %>" <% if (config.timezone === tz) { %>selected<% } %>><%= tz %></option><% }) %></select></p>
+                  <p><img src="https://discordapp.com/assets/cf7f3e86b93c14f8e53feac55a1b637f.svg" height="20px" width="20px"> <b>Locale:</b> <select id="locale" name="locale" aria-controls="config" class="form-control form-control-sm"><% Object.keys(guild.client.languages).forEach(l => { %><option value="<%= l %>" <% if (config.locale === l) { %>selected<% } %>><%= l %></option><% }); %></select></p>
+                  <p><img src="https://discordapp.com/assets/8ce180bda86f59e517eb6a1d0ed84eef.svg" height="20px" width="20px"> <b>Number:</b> <br><button id="number" class="btn btn-secondary btn-lg" <% if (!guild.client.numbers.findKey(id => id === guild.id)) { %> data-toggle="modal" data-target="#requestNumberModal" <% } %>><%= guild.client.numbers.findKey(id => id === guild.id) || 'Request a number' %></button></p>
+                </div>
+
+                <div class="modal fade" id="requestNumberModal" tabindex="-1" role="dialog" aria-labelledby="requestNumberModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="requestNumberModalLabel">Rules of iBot telephone</h5>
+                      </div>
+                      <div class="modal-body">
+                        Hello,<br>
+                        Thank you for requesting a iBot telephone number. Please read the rules just below :<br>
+                        <ul class="list-group">
+                          <li class="list-group-item">1) You must not insult, impersonate, discriminate anyone through the phone.</li>
+                          <li class="list-group-item">2) You must not raid through the phone, if you do, logs will be used for a report to abuse@discordapp.com.</li>
+                          <li class="list-group-item">3) Please do not spam-call someone if they do not want to answer. You could get blacklisted of using iBot commands.</li>
+                          <li class="list-group-item">4) If you wish to do not appear on the public phonebook, please ask a server administrator (with <code>MANAGE_GUILD</code> permission) to run <code>i:phonebook switch</code>.</li>
+                          <li class="list-group-item">5) Do not share pornographic, offensive or discriminating content.</li>
+                          <li class="list-group-item">6) Any abuse of the system can result in a blacklist of the user.</li>
+                          <li class="list-group-item">7) If you wish to blacklist a number of your telephone, you ask a server administrator to run <code>i:config phoneblacklist [number]</code>, they won't be able to call you anymore.</li>
+                        </ul>
+
+                        If you do agree with these rules, please share them publically on your server and click on the <em>I do accept</em> button.<br>
+                        Otherwise click on <em>I do not accept</em> button.<br><br>
+
+                        Thank you for using iBot services!<br>
+                        <strong>iDroid#4441, owner.</strong>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">I do not accept</button>
+                        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="requestNumber()">I do accept</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+          <div class="text-center"><button class="btn btn-primary btn-lg" type="submit" onclick="updateConfig()">Update</button></div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+    /*$('#myTab a').on('click', function(e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })*/
+
+    function requestNumber() {
+      const guildID = '<%= guild.id %>';
+      const requestRequest = new XMLHttpRequest();
+      let numberThing = document.getElementById('number');
+
+      if (numberThing.innerHTML !== 'Request a number') return;
+
+      requestRequest.withCredentials = true;
+      requestRequest.open('POST', 'https://ibot.idroid.me/api/guild/requestNumber', true);
+
+      requestRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+      requestRequest.onload = (e) => {
+        if (requestRequest.readyState === 4) {
+          if (requestRequest.status === 200) {
+            numberThing.innerHTML = `${JSON.parse(requestRequest.responseText).number}`;
+            numberThing.setAttribute('data-toggle', undefined);
+            numberThing.setAttribute('data-target', undefined);
+          } else {
+            numberThing.setAttribute('class', 'alert alert-danger text-center');
+            numberThing.innerHTML = 'An error occured while requesting the number!';
+          }
+        }
+      }
+
+      requestRequest.send(encodeURIComponent(JSON.stringify({ guildID })));
+    }
+        
+    function updateConfig() {
+      const updateRequest = new XMLHttpRequest();
+      const alert = document.getElementById('confStatus');
+      const sentForm = {
+        guildID: '<%= guild.id %>',
+      };
+    
+      ['channel_welcome', 'channel_serverlog', 'channel_modlog', 'channel_phone', 'switch_welcome', 'switch_serverlog', 'switch_modlog', 'switch_clearbackup', 'switch_phonebook', 'message_welcome', 'message_leaving', 'timezone', 'locale'].forEach(key => {
+        sentForm[key] = document.getElementById(key).value;
+      });
+    
+      updateRequest.withCredentials = true;
+      updateRequest.open('POST', 'https://ibot.idroid.me/api/guild/updateConfig', true);
+    
+      updateRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+      updateRequest.onload = (e) => {
+        if (updateRequest.readyState === 4) {
+          if (updateRequest.status === 200) {
+            alert.innerHTML = '<b>Success</b> - The configuration has been updated successfully!';
+            alert.setAttribute('class', 'alert alert-success text-center');
+            setTimeout(confStatusNormal, 5000);
+
+            const welcome = document.getElementById('message_welcome');
+            const leaving = document.getElementById('message_leaving');
+            if (welcome.innerHTML === '') welcome.innerHTML = 'No message set';
+            if (leaving.innerHTML === '') leaving.innerHTML = 'No message set';
+          } else {
+            alert.innerHTML = `<b>Error</b> - Code: ${updateRequest.status} - Message: ${JSON.parse(updateRequest.responseText).message.message}`;
+            alert.setAttribute('class', 'alert alert-danger text-center');
+            setTimeout(confStatusNormal, 5000);
+          }
+        }
+      }
+    
+      alert.innerHTML = 'Updating...';
+      alert.setAttribute('class', 'alert alert-dark text-center');
+      updateRequest.send(encodeURIComponent(JSON.stringify(sentForm)));
+    }
+    
+    function confStatusNormal() {
+      const element = document.getElementById('confStatus');
+      element.innerHTML = 'Click on the <b>Update</b> button to submit your new configuration.';
+      element.setAttribute('class', 'alert alert-info text-center');
+    }
+    </script>
+    <% } %>
+
+    <% if (user.id === '205427654042583040' || (guild.members.has(user.id) && guild.members.get(user.id).permissions.has('KICK_MEMBERS'))) { %>
+    <!-- Moderate -->
+    <div class="jumbotron jumbotron-fluid text-center">
+      <div class="container">
+        <form id="configUpdate" class="formInline" name="configUpdate" method="post" action="javascript:void(0);" onsubmit="modAction()">
+          <h1 class="mbr-section-title mbr-bold mbr-fonts-style"><strong>MODERATE</strong></h1>
+          <hr>
+          <div id="modActionStatus" name="modActionStatus" class="alert alert-info" role="alert">
+            Enter the username or the ID of the member, choose the action to perform and put the reason... and <b>Do it!</b>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <input id="user" name="user" type="text" class="form-control mx-sm-3" placeholder="User#1234 or ID">
+            </div>
+            <div class="col">
+              <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="actionToDo" name="actionToDo">
+                <% if (guild.members.has(user.id) && guild.members.get(user.id).permissions.has('BAN_MEMBERS')) { %><option value="ban">Ban member</option><% } %>
+                <option value="kick">Kick member</option>
+              </select>
+            </div>
+            <div class="col-7">
+                <input id="reason" name="reason" type="text" class="form-control mx-sm-3" placeholder="Reason">
+              </div>
+            </div>
+          </div>
+          <div class="h-25 d-inline-block" style="width: 120px"></div>
+          <div class="col-auto">
+            <button class="btn btn-primary btn-lg" type="submit">Do it!</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Moderation cases -->
+    <div class="jumbotron jumbotron-fluid text-center">
+      <div class="container">
+        <h1 class="mbr-section-title mbr-bold mbr-fonts-style"><strong>MOD CASES</strong></h1>
+        <hr>
+        <div class="table-responsive">
+          <table id="table" class="table table-bordered">
+            <thead>
+              <th class="text-center">#</th>
+              <th class="text-center">Action</th>
+              <th class="text-center">Author</th>
+              <th class="text-center">User</th>
+              <th class="text-center">Channel</th>
+              <th class="text-center">Reason</th>
+              <th class="text-center">Date</th>
+            </thead>
+            <tbody>
+              <% config.moderation.forEach((m, index) => { %>
+              <tr>
+                <td class="text-center"><%= (index + 1) %></td>
+                <td class="text-center"><%= m.ACTION %></td>
+                <td class="text-center"><span class="nav-item"><a href="/user/<%= m.AUTHOR %>" style="color: grey;"><%= guild.client.users.has(m.AUTHOR) ? guild.client.users.get(m.AUTHOR).tag : 'User' %></a></span></td>
+                <td class="text-center"><% if (m.USER || m.VICTIM) { %><span class="nav-item"><a href="/user/<%= m.USER || m.VICTIM %>" style="color: grey;"><%= guild.client.users.has(m.USER || m.VICTIM) ? guild.client.users.get(m.USER || m.VICTIM).tag : 'User' %></a></span><% } else { %>None<% } %></td>
+                <td class="text-center"><%= guild.channels.has(m.CHANNEL) ? `#${guild.channels.get(m.CHANNEL).name}` : 'None' %></td>
+                <td class="text-center"><%= m.REASON %></td>
+                <td class="text-center"><%= new Date(m.TIME).toISOString() %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.0/showdown.min.js"></script>
+    <script>
+    function modAction() {
+      const updateRequest = new XMLHttpRequest();
+      const alert = document.getElementById('modActionStatus');
+      const sentForm = {
+        guildID: '<%= guild.id %>',
+      };
+
+      ['user', 'actionToDo', 'reason'].forEach(key => {
+        sentForm[key] = document.getElementById(key).value;
+      });
+
+      updateRequest.withCredentials = true;
+      updateRequest.open('POST', 'https://ibot.idroid.me/api/guild/modAction', true);
+
+      updateRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+      updateRequest.onload = (e) => {
+        if (updateRequest.readyState === 4) {
+          if (updateRequest.status === 200) {
+            alert.innerHTML = `<b>Success</b> - ${JSON.parse(updateRequest.responseText).message}`;
+            alert.setAttribute('class', 'alert alert-success');
+            setTimeout(modActionStatusNormal, 5000);
+          } else if (updateRequest.status === 696) {
+            const converter = new showdown.Converter();
+            alert.innerHTML = converter.makeHtml(JSON.parse(updateRequest.responseText).message.replace(/\n/g, '<br>'));
+            alert.setAttribute('class', 'alert alert-warning text-center');
+            setTimeout(modActionStatusNormal, 15000);
+          } else {
+            alert.innerHTML = `<b>Error</b> - Code: ${updateRequest.status} - Message: ${JSON.parse(updateRequest.responseText).message}`;
+            alert.setAttribute('class', 'alert alert-danger text-center');
+            setTimeout(modActionStatusNormal, 5000);
+          }
+        }
+      }
+
+      alert.innerHTML = 'Updating...';
+      alert.setAttribute('class', 'alert alert-dark text-center');
+      updateRequest.send(encodeURIComponent(JSON.stringify(sentForm)));
+    }
+
+    function modActionStatusNormal() {
+      const element = document.getElementById('modActionStatus');
+      element.innerHTML = 'Enter the username or the ID of the member, choose the action to perform and put the reason... and <b>Do it!</b>';
+      element.setAttribute('class', 'alert alert-info text-center');
+    }
+    </script>
+
+    <% } %>
+
+    <!-- Footer -->
+    <% include parts/footer.ejs %>
+
+    <!-- Table design -->
+    <% include parts/datatable.ejs %>
+  </body>
+</html>

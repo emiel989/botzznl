@@ -1,0 +1,30 @@
+{
+	"discord": {
+		"prefix": "",
+		"token": "",
+		"ownerID": "",
+		"commandCategories": []
+	},
+	"api": {
+		"google": "",
+		"youtube": "",
+		"weather": "",
+		"cleverbot": "",
+		"discord_bans": "",
+		"discordbots_org": "",
+		"lsterminalink_api": ""
+	},
+	"dashboard": {
+		"clientID": "",
+		"clientSecret": "",
+		"scopes": [],
+		"callbackURL": "",
+		"session_secret": "",
+		"portHttp": 0,
+		"portHttps": 0
+	},
+	"blacklist":{
+		"guilds":{},
+		"users":{}
+	}
+}

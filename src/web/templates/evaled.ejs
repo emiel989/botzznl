@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include parts/head.ejs %>
+    <title>iBot - Eval</title>
+  </head>
+  <body>
+    <!-- Nav-bar -->
+    <% include parts/header.ejs %>
+
+    <% if (status === 'OK') { %>
+    <!-- Eval success -->
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h4>Evaled - no error</h4>
+        <hr>
+        <pre class="pre-scrollable snippet">
+          <code class="javascript">
+            <%= output %>
+          </code>
+        </pre>
+      </div>
+    </div>
+    <% } else { %>
+    <!-- Eval success -->
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h4>Evaled - error</h4>
+        <hr>
+        <pre class="pre-scrollable snippet">
+          <code class="javascript">
+            <%= output %>
+          </code>
+        </pre>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Footer -->
+    <% include parts/footer.ejs %>
+  </body>
+</html>
